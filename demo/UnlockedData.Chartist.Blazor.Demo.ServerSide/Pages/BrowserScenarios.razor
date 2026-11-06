@@ -1,0 +1,221 @@
+@page "/BrowserScenarios"
+
+<h3>Browser Scenarios</h3>
+<p>The cases the browser tests in test/UnlockedData.Chartist.Blazor.BrowserTests drive.</p>
+
+<button id="rerender" class="btn btn-primary" @onclick="ReRender">Re-render</button>
+<button id="rapid-rerender" class="btn btn-primary" @onclick="RapidReRender">Re-render 5 times</button>
+<span id="render-count">@_renderCount</span>
+
+<section data-scenario="named-line">
+    <h4>Named series, line</h4>
+    <ChartistLine Data="_namedLine" Options="_namedLineOptions"
+                  OnDataPointClicked="_namedLineLog.Clicked"
+                  OnDataPointEntered="_namedLineLog.Entered"
+                  OnDataPointExited="_namedLineLog.Exited"/>
+    <EventReadout Log="_namedLineLog"/>
+</section>
+
+<section data-scenario="named-bar">
+    <h4>Named series, bar</h4>
+    <ChartistBar Data="_namedBar" Options="_namedBarOptions"
+                 OnDataPointClicked="_namedBarLog.Clicked"
+                 OnDataPointEntered="_namedBarLog.Entered"
+                 OnDataPointExited="_namedBarLog.Exited"/>
+    <EventReadout Log="_namedBarLog"/>
+</section>
+
+<section data-scenario="stacked-bar">
+    <h4>Stacked bar</h4>
+    <ChartistBar Data="_stackedBar" Options="_stackedBarOptions" OnDataPointClicked="_stackedBarLog.Clicked"/>
+    <EventReadout Log="_stackedBarLog"/>
+</section>
+
+<section data-scenario="zero-negative-bar">
+    <h4>Zero and negative values, point labels</h4>
+    <ChartistBar Data="_zeroNegativeBar" Options="_zeroNegativeBarOptions" OnDataPointClicked="_zeroNegativeBarLog.Clicked"/>
+    <EventReadout Log="_zeroNegativeBarLog"/>
+</section>
+
+<section data-scenario="zero-line">
+    <h4>Zero value, point labels</h4>
+    <ChartistLine Data="_zeroLine" Options="_zeroLineOptions"/>
+</section>
+
+<section data-scenario="missing-labels">
+    <h4>No labels</h4>
+    <ChartistLine Data="_missingLabels" Options="_missingLabelsOptions"/>
+</section>
+
+<section data-scenario="no-meta">
+    <h4>Unnamed series without meta</h4>
+    <ChartistLine Data="_noMeta" Options="_noMetaOptions" OnDataPointClicked="_noMetaLog.Clicked"/>
+    <EventReadout Log="_noMetaLog"/>
+</section>
+
+<section data-scenario="custom-class">
+    <h4>Custom series class and CSS class updates</h4>
+    <ChartistLine Data="_customClass" Options="_customClassOptions"/>
+</section>
+
+<section data-scenario="legend">
+    <h4>Legend</h4>
+    <ChartistBar Data="_legendBar" Options="_legendBarOptions"/>
+</section>
+
+<section data-scenario="tooltip-line">
+    <h4>Tooltip with meta</h4>
+    <ChartistLine Data="_tooltipLine" Options="_tooltipLineOptions"/>
+</section>
+
+<section data-scenario="plain-pie">
+    <h4>Plain pie with tooltips</h4>
+    <ChartistPie Data="_plainPie" Options="_plainPieOptions"/>
+</section>
+
+<section data-scenario="plain-donut">
+    <h4>Plain donut with tooltips</h4>
+    <ChartistPie Data="_plainDonut" Options="_plainDonutOptions"/>
+</section>
+
+<section data-scenario="donut-solid">
+    <h4>Obsolete DonutSolid</h4>
+    <ChartistPie Data="_donutSolid" Options="_donutSolidOptions"/>
+</section>
+
+@code {
+
+    private int _renderCount;
+
+    private readonly EventLog _namedLineLog = new();
+    private readonly EventLog _namedBarLog = new();
+    private readonly EventLog _stackedBarLog = new();
+    private readonly EventLog _zeroNegativeBarLog = new();
+    private readonly EventLog _noMetaLog = new();
+
+    private readonly ExtendedChartData _namedLine = TwoNamedSeries("Line A", "Line B");
+    private readonly LineOptions _namedLineOptions = new();
+
+    private readonly ExtendedChartData _namedBar = TwoNamedSeries("Bar A", "Bar B");
+    private readonly BarOptions _namedBarOptions = new();
+
+    private readonly ExtendedChartData _stackedBar = TwoNamedSeries("Stack A", "Stack B");
+    private readonly BarOptions _stackedBarOptions = new()
+    {
+        StackBars = true,
+        StackMode = StackMode.Accumulate
+    };
+
+    private readonly ExtendedChartData _zeroNegativeBar = OneSeries(("Mon", 0), ("Tue", -5), ("Wed", 7));
+    private readonly BarOptions _zeroNegativeBarOptions = new() { ShowPointLabels = true };
+
+    private readonly ExtendedChartData _zeroLine = OneSeries(("Mon", 0), ("Tue", 5), ("Wed", 7));
+    private readonly LineOptions _zeroLineOptions = new() { ShowPointLabels = true };
+
+    private readonly ExtendedChartData _missingLabels = WithoutLabels();
+    private readonly LineOptions _missingLabelsOptions = new();
+
+    private readonly ExtendedChartData _noMeta = UnnamedWithoutMeta();
+    private readonly LineOptions _noMetaOptions = new();
+
+    private readonly ExtendedChartData _customClass = CustomClassSeries();
+    private readonly LineOptions _customClassOptions = new()
+    {
+        CssClassUpdates = new List<CssClassUpdate>
+        {
+            new() { CssSelector = ".custom-series .ct-point:nth-of-type(1)", Class = "special" }
+        }
+    };
+
+    private readonly ExtendedChartData _legendBar = TwoNamedSeries("Legend A", "Legend B");
+    private readonly BarOptions _legendBarOptions = new() { ShowLegend = true };
+
+    private readonly ExtendedChartData _tooltipLine = TwoNamedSeries("Tip A", "Tip B");
+    private readonly LineOptions _tooltipLineOptions = new() { ShowTooltips = true };
+
+    private readonly PieChartData _plainPie = new() { Series = new List<double> { 5, 3, 4 } };
+    private readonly PieOptions _plainPieOptions = new() { ShowTooltips = true };
+
+    private readonly PieChartData _plainDonut = new() { Series = new List<double> { 5, 3, 4 } };
+    private readonly PieOptions _plainDonutOptions = new() { Donut = true, ShowTooltips = true };
+
+    private readonly PieChartData _donutSolid = new() { Series = new List<double> { 5, 3, 4 } };
+#pragma warning disable CS0618 // Proves the obsolete option is harmless
+    private readonly PieOptions _donutSolidOptions = new() { Donut = true, DonutSolid = true };
+#pragma warning restore CS0618
+
+    private void ReRender()
+    {
+        _renderCount++;
+    }
+
+    private async Task RapidReRender()
+    {
+        for (var i = 0; i < 5; i++)
+        {
+            _renderCount++;
+            StateHasChanged();
+            await Task.Yield();
+        }
+    }
+
+    private static ExtendedChartData TwoNamedSeries(string first, string second) => new()
+    {
+        Labels = new List<string> { "Mon", "Tue", "Wed" },
+        Series = new List<SeriesData>
+        {
+            Series(first, ("Mon", 12), ("Tue", 9), ("Wed", 7)),
+            Series(second, ("Mon", 4), ("Tue", 6), ("Wed", 3))
+        }
+    };
+
+    private static ExtendedChartData OneSeries(params (string Label, double Y)[] points) => new()
+    {
+        Labels = points.Select(p => p.Label).ToList(),
+        Series = new List<SeriesData> { Series("Only series", points) }
+    };
+
+    private static ExtendedChartData WithoutLabels() => new()
+    {
+        Series = new List<SeriesData> { Series("No labels", ("One", 1), ("Two", 2), ("Three", 3)) }
+    };
+
+    private static ExtendedChartData UnnamedWithoutMeta() => new()
+    {
+        Labels = new List<string> { "Mon", "Tue", "Wed" },
+        Series = new List<SeriesData>
+        {
+            new()
+            {
+                Name = "",
+                SeriesPoints = new List<SeriesPoint>
+                {
+                    new() { Y = 3, Meta = null! },
+                    new() { Y = 8, Meta = null! },
+                    new() { Y = 5, Meta = null! }
+                }
+            }
+        }
+    };
+
+    private static ExtendedChartData CustomClassSeries()
+    {
+        var series = Series("Custom", ("Mon", 1), ("Tue", 2), ("Wed", 3));
+        series.ClassName = "custom-series";
+
+        return new ExtendedChartData
+        {
+            Labels = new List<string> { "Mon", "Tue", "Wed" },
+            Series = new List<SeriesData> { series }
+        };
+    }
+
+    private static SeriesData Series(string name, params (string Label, double Y)[] points) => new()
+    {
+        Name = name,
+        SeriesPoints = points
+            .Select(p => new SeriesPoint { Y = p.Y, Meta = new PointMetaInfo { Label = p.Label } })
+            .ToList()
+    };
+
+}

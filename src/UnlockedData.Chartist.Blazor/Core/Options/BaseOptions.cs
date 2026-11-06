@@ -90,8 +90,9 @@ public class ChartBaseOptions
     /// </summary>
     public bool ShowPointLabels { get; set; } = false;
     /// <summary>
-    /// enable zoom plugin
+    /// Ignored. The zoom plugin was removed in 4.0.
     /// </summary>
+    [Obsolete("Zoom was removed in 4.0 and is ignored.")]
     public bool UseZoom { get; set; } = false;
     /// <summary>
     /// Use this to update elements in the SVG with specific classes so they can be targeted by CSS

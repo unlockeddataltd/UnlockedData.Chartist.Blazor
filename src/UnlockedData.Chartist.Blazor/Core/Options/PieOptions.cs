@@ -52,14 +52,9 @@ public class PieOptions : ChartBaseOptions
     public bool Donut { get; set; } = false;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the donut is solid.
+    /// Ignored. Chartist 2 has no solid donut, so a donut is always drawn with strokes.
     /// </summary>
-    /// <value>
-    ///   <c>true</c> if the donut is solid; otherwise, <c>false</c>.
-    /// </value>
-    /// <remarks>
-    /// Defaults to <c>false</c>
-    /// </remarks>
+    [Obsolete("Chartist 2 has no solid donut; ignored.")]
     public bool DonutSolid { get; set; } = false;
 
     /// <summary>

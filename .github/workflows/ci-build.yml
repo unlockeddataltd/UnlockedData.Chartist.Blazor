@@ -46,6 +46,12 @@ jobs:
       run: dotnet build UnlockedData.Chartist.Blazor.sln --configuration Release
     - name: Unit Tests
       run: dotnet test UnlockedData.Chartist.Blazor.sln --no-build -c Release --verbosity normal
+    - name: Build demo and browser tests
+      run: dotnet build UnlockedData.Chartist.Blazor.Demo.sln --configuration Release
+    - name: Install Playwright Chromium
+      run: pwsh test/UnlockedData.Chartist.Blazor.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+    - name: Browser Tests
+      run: dotnet test test/UnlockedData.Chartist.Blazor.BrowserTests/UnlockedData.Chartist.Blazor.BrowserTests.csproj --no-build -c Release --verbosity normal
     - name: Pack
       run: dotnet pack UnlockedData.Chartist.Blazor.sln --no-build -c Release --output "${{ github.workspace }}/package"
     - name: Upload Artifacts
