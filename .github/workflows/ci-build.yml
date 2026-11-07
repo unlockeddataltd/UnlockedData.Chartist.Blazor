@@ -54,6 +54,8 @@ jobs:
       run: dotnet test test/UnlockedData.Chartist.Blazor.BrowserTests/UnlockedData.Chartist.Blazor.BrowserTests.csproj --no-build -c Release --verbosity normal
     - name: Pack
       run: dotnet pack UnlockedData.Chartist.Blazor.sln --no-build -c Release --output "${{ github.workspace }}/package"
+    - name: Check package version
+      run: test -f "${{ github.workspace }}/package/UnlockedData.Chartist.Blazor.$NBGV_NuGetPackageVersion.nupkg"
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:

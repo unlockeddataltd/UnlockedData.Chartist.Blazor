@@ -99,7 +99,7 @@
     private readonly ExtendedChartData _namedBar = TwoNamedSeries("Bar A", "Bar B");
     private readonly BarOptions _namedBarOptions = new();
 
-    private readonly ExtendedChartData _stackedBar = TwoNamedSeries("Stack A", "Stack B");
+    private readonly ExtendedChartData _stackedBar = WithX(TwoNamedSeries("Stack A", "Stack B"));
     private readonly BarOptions _stackedBarOptions = new()
     {
         StackBars = true,
@@ -168,6 +168,22 @@
             Series(second, ("Mon", 4), ("Tue", 6), ("Wed", 3))
         }
     };
+
+    // Chartist writes both numbers to ct:value when a point has an X and a Y
+    private static ExtendedChartData WithX(ExtendedChartData data)
+    {
+        foreach (var series in data.Series)
+        {
+            var x = 10;
+            foreach (var point in series.SeriesPoints)
+            {
+                point.X = x;
+                x += 10;
+            }
+        }
+
+        return data;
+    }
 
     private static ExtendedChartData OneSeries(params (string Label, double Y)[] points) => new()
     {

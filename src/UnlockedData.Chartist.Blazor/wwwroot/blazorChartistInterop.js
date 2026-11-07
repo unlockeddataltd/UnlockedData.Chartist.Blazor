@@ -204,7 +204,7 @@
     }
 
     configurePlugins(options) {
-        // compat restores the 'created' event and runs the 0.x-style plugins below
+        // compat restores the 'created' event and runs the 1.x-style plugins below
         options.plugins = [Chartist.compat];
 
         if (options.showLegend) {

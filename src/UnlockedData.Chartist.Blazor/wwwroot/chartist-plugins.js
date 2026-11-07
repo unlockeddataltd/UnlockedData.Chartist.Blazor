@@ -1,7 +1,7 @@
 // First-party chart plugins for UnlockedData.Chartist.Blazor: legend, tooltip and point labels.
-// They are 0.x-style plugins and run through Chartist's compat build, so this file
+// They are 1.x-style plugins and run through Chartist's compat build, so this file
 // must load after vendor/chartist/index.umd.js and vendor/chartist/compat.umd.js.
-if (!globalThis.Chartist || !globalThis.Chartist.compat || !globalThis.Chartist.plugins) {
+if (!globalThis.Chartist || !globalThis.Chartist.LineChart || !globalThis.Chartist.compat || !globalThis.Chartist.plugins) {
     throw new Error('UnlockedData.Chartist.Blazor: chartist-plugins.js must load after vendor/chartist/index.umd.js and vendor/chartist/compat.umd.js.');
 }
 
