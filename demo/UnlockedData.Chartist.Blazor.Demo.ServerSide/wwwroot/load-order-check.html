@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Load order check</title>
+    <!-- Deliberately leaves out compat.umd.js and chartist-plugins.js, for the browser tests. -->
+    <script src="_content/UnlockedData.Chartist.Blazor/vendor/chartist/index.umd.js"></script>
+    <script src="_content/UnlockedData.Chartist.Blazor/blazorChartistInterop.js"></script>
+</head>
+<body>
+<div id="chart"></div>
+<pre id="create-error"></pre>
+<script>
+    try {
+        bChartist.createChart("Line", document.getElementById("chart"), {}, {}, null, "chart");
+    } catch (error) {
+        document.getElementById("create-error").textContent = error.message;
+    }
+</script>
+</body>
+</html>

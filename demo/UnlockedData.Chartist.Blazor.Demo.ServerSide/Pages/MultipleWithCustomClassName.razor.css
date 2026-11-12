@@ -1,6 +1,6 @@
 ::deep .custom-class-dots {
     stroke: green;
-    stroke-dasharray: 1000;
+    --ct-line-dasharray: 1000px;
     stroke-dashoffset: 1000;
     animation: dash 7s linear forwards;
 }

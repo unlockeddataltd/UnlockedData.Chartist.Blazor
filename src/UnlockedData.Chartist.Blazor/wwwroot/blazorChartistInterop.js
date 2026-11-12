@@ -1,30 +1,53 @@
 ﻿class BlazorChartist {
 
+    constructor() {
+        const loadError = this.chartistLoadError();
+        if (loadError) {
+            console.error(loadError);
+        }
+    }
+
+    // Returns the problem with the script tags on the page, or null when Chartist is ready to use.
+    chartistLoadError() {
+        const chartist = globalThis.Chartist;
+        if (chartist && chartist.LineChart && chartist.compat && chartist.plugins && chartist.plugins.legend) {
+            return null;
+        }
+
+        return 'UnlockedData.Chartist.Blazor: Chartist is not loaded correctly. Load these scripts in this order: '
+            + 'vendor/chartist/index.umd.js, vendor/chartist/compat.umd.js, chartist-plugins.js, blazorChartistInterop.js.';
+    }
+
+    assertChartistLoaded() {
+        const loadError = this.chartistLoadError();
+        if (loadError) {
+            throw new Error(loadError);
+        }
+    }
+
     createChart(type, elem, data, options, instance, id) {
+
+        this.assertChartistLoaded();
 
         //configure plugins if they are set
         options = this.optionsCleaner(type, options);
         options = this.configurePlugins(options);
-        
+
 
 
         let chart;
 
         switch (type) {
             case "Bar":
-                chart = Chartist.Bar(elem, data, options);
+                chart = new Chartist.BarChart(elem, data, options);
                 break;
             case "Pie":
-                chart = Chartist.Pie(elem, data, options);
+                chart = new Chartist.PieChart(elem, data, options);
                 break;
             case "Line":
-                chart = Chartist.Line(elem, data, options);
+                chart = new Chartist.LineChart(elem, data, options);
                 break;
         }
-
-        chart.on('draw', function (data) {
-
-        });
 
         chart.on('created', function (data) {
 
@@ -73,15 +96,13 @@
             })
         });
 
-        chart.on('update', function (data, options) {
-           
-        });
-
         elem['_chart'] = chart;
     };
 
     updateChart(type, elem, data, options) {
-        
+
+        this.assertChartistLoaded();
+
         options = this.configurePlugins(options);
         options = this.optionsCleaner(type, options);
         elem['_chart'].update(data, options);
@@ -90,9 +111,9 @@
     };
 
     createChartistMouseEvents(e) {
-        let values = e.target.getAttribute('ct-value').split(',');
+        let values = e.target.getAttribute('ct:value').split(',');
         let result = {
-            pointMetaInfo: JSON.parse(bChartist.decodeHTMLEntities(e.target.getAttribute('ct-meta'))).data,
+            pointMetaInfo: this.pointMetaInfo(e.target),
             x: function () {
                 if (values.length === 2) {
                     return Number(values[0]);
@@ -104,23 +125,33 @@
                 }
                 return Number(values[0]);
             }(),
-            seriesName: e.target.parentElement.getAttribute('ct-series-name')
+            seriesName: this.seriesName(e.target)
         };
 
         return result;
     };
 
-    decodeHTMLEntities(str) {
-        if (str && typeof str === 'string') {
-            let parser = new DOMParser;
-            let dom = parser.parseFromString(str, 'text/html');
-            let decodedString = dom.body.textContent;
-            return decodedString;
+    // A point without usable meta binds to the default PointMetaInfo on the C# side
+    pointMetaInfo(element) {
+        const meta = Chartist.deserialize(element.getAttribute('ct:meta'));
+        if (meta === null || typeof meta !== 'object' || Array.isArray(meta)) {
+            return {};
         }
 
-        return str;
+        return meta;
+    }
 
+    // Chartist leaves ct:series-name off the series group of an unnamed series.
+    // The attribute is namespaced, so a CSS attribute selector can't find it.
+    seriesName(element) {
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+            const name = parent.getAttribute('ct:series-name');
+            if (name !== null) {
+                return name;
+            }
+        }
 
+        return null;
     }
 
     interpolationHelper(method) {
@@ -166,20 +197,21 @@
         if (options.toolTipOptions.transformTooltipTextFunction != undefined) {
             options.toolTipOptions.transformTooltipTextFnc = this.labelInterpolationFunctions[options.toolTipOptions.transformTooltipTextFunction]
         }
-        
-            
+
+
         return options
 
     }
 
     configurePlugins(options) {
-        options.plugins = [];
+        // compat restores the 'created' event and runs the 1.x-style plugins below
+        options.plugins = [Chartist.compat];
 
         if (options.showLegend) {
             options.plugins.push(Chartist.plugins.legend(options.legendOptions));
         }
 
-        
+
         if (options.showTooltips) {
             // var transFunc = function (value) {console.log(value); return 'hi'};
             // var textFunc = function (meta, value) {console.log(value); return value.toString()};
@@ -192,20 +224,13 @@
             options.plugins.push(Chartist.plugins.ctPointLabels());
         }
 
-        if (options.useZoom) {
-            options.plugins.push(Chartist.plugins.zoom({
-                onZoom: function (chart, reset) {
-                    storeReset(reset);
-                }
-            }));
-        }
         return options
     }
 
     labelInterpolationFunctions = {
         truncateToKMB: function (value) {
-            return Math.abs(Number(value)) >= 1.0e+9 ? Math.abs(Number(value)) / 1.0e+9 + "B" : 
-                Math.abs(Number(value)) >= 1.0e+6 ? Math.abs(Number(value)) / 1.0e+6 + "M" : 
+            return Math.abs(Number(value)) >= 1.0e+9 ? Math.abs(Number(value)) / 1.0e+9 + "B" :
+                Math.abs(Number(value)) >= 1.0e+6 ? Math.abs(Number(value)) / 1.0e+6 + "M" :
                     Math.abs(Number(value)) >= 1.0e+3 ? Math.abs(Number(value)) / 1.0e+3 + "K" : Math.abs(Number(value));
         },
         truncateToKMBCommaSeparated: function (value) {
@@ -216,7 +241,9 @@
         commaSeparated: function (value) {
             return  Math.round(Number(value),0).toLocaleString()
         },
-        noop: Chartist.noop
+        noop: function (value) {
+            return value;
+        }
     }
 
 
@@ -225,5 +252,4 @@
     }
 }
 
-window.bChartist = new BlazorChartist(); 
-
+window.bChartist = new BlazorChartist();

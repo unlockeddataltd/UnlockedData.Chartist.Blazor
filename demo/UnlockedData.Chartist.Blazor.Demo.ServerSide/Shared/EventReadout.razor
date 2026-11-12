@@ -1,0 +1,36 @@
+@implements IDisposable
+
+<dl class="event-readout">
+    <dt>Event</dt>
+    <dd data-field="type">@Log.LastType</dd>
+    <dt>Label</dt>
+    <dd data-field="label">@Log.LastArgs?.PointMetaInfo.Label</dd>
+    <dt>X</dt>
+    <dd data-field="x">@Log.LastArgs?.X</dd>
+    <dt>Y</dt>
+    <dd data-field="y">@Log.LastArgs?.Y</dd>
+    <dt>Series</dt>
+    <dd data-field="series">@(Log.LastArgs is null ? null : Log.LastArgs.SeriesName ?? "(none)")</dd>
+</dl>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public EventLog Log { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Log.Changed += OnChanged;
+    }
+
+    private void OnChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Log.Changed -= OnChanged;
+    }
+
+}

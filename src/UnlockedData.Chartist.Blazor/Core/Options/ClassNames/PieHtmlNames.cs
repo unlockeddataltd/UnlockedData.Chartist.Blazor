@@ -38,11 +38,9 @@
         public string SliceDonut { get; set; } = "ct-slice-donut";
 
         /// <summary>
-        /// Gets or sets the solid donut slice style class name.
+        /// Ignored. Chartist 2 has no solid donut.
         /// </summary>
-        /// <value>
-        /// The solid donut slice style class name.
-        /// </value>
+        [System.Obsolete("Chartist 2 has no solid donut; ignored.")]
         public string SliceDonutSolid { get; set; } = "ct-slice-donut-solid";
     }
 }
